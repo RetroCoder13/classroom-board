@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classroom Board</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="setup.js"></script>
+</head>
+<body>
+    <canvas id="board" width="1000" height="500"></canvas>
+    <select name="mode" id="mode" onchange="changeMode()">
+        <option value="send">Send</option>
+        <option value="stream">Stream</option>
+    </select>
+    <script src="main.js"></script>
+</body>
+</html>
