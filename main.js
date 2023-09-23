@@ -5,6 +5,10 @@ var mouseDown = false
 var updatedPositions = []
 var enableDrawing = true
 
+if(!localStorage['sb-dkffidtdquvdbslkvqux-auth-token']){
+    location.href = "./login"
+}
+
 async function getScreen(){
     var { data, error } = await supabaseClient
         .from('boardData')
@@ -25,7 +29,7 @@ async function getScreen(){
 }
 
 function changeMode(){
-    if(document.getElementById('mode').value == "send"){
+    if(JSON.parse(localStorage['sb-dkffidtdquvdbslkvqux-auth-token']).user.email == "atk@gbhs.co.uk"){
         document.getElementById('color').hidden = false
         document.getElementById('clearScreen').hidden = false
         document.getElementById('brushWidth').hidden = false
