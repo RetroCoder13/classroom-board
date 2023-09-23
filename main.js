@@ -4,6 +4,7 @@ const ctx = canvas.getContext('2d')
 var mouseDown = false
 var updatedPositions = []
 var enableDrawing = true
+var prevPosition = []
 
 if(!localStorage['sb-dkffidtdquvdbslkvqux-auth-token']){
     location.href = "./login"
@@ -49,10 +50,31 @@ function changeMode(){
                     ctx.clearRect(0,0,canvas.width,canvas.height)
                 } else {
                     payload = JSON.parse(payload.new.boardData)
+                    prevPosition = [payload[2][0],payload[2][1]]
                     brushWidth = payload[1]
                     ctx.fillStyle = payload[0]
-                    for(let i=2;i<payload.length;i++){
-                        ctx.fillRect(payload[i][0]-(brushWidth/2),payload[i][1]-(brushWidth/2),brushWidth,brushWidth)
+                    for(let i=3;i<payload.length;i++){
+                        let x = payload[i][0] - prevPosition[0]
+                        let y = payload[i][1] - prevPosition[1]
+                        if(x > 0){
+                            for(let i=0;i<x;i++){
+                                ctx.fillRect(prevPosition[0]+i,prevPosition[1]+(i*(y/x)),brushWidth,brushWidth)
+                            }
+                        } else if(x < 0) {
+                            for(let i=0;i>x;i--){
+                                ctx.fillRect(prevPosition[0]+i,prevPosition[1]+(i*(y/x)),brushWidth,brushWidth)
+                            }
+                        } else if(y > 0) {
+                            for(let i=0;i<y;i++){
+                                ctx.fillRect(prevPosition[0],prevPosition[1]+i,brushWidth,brushWidth)
+                            }
+                        } else if(y < 0) {
+                            for(let i=0;i>y;i--){
+                                ctx.fillRect(prevPosition[0],prevPosition[1]+i,brushWidth,brushWidth)
+                            }
+                        }
+
+                        prevPosition = [payload[i][0],payload[i][1]]
                     }
                 }
             })
@@ -67,6 +89,7 @@ canvas.addEventListener('mousedown',function mouseDownEvent(e){
         mouseDown = true
         updatedPositions = [ctx.fillStyle,brushWidth,[e.offsetX-(brushWidth/2),e.offsetY-(brushWidth/2)]]
         ctx.fillRect(e.offsetX-(brushWidth/2),e.offsetY-(brushWidth/2),brushWidth,brushWidth)
+        prevPosition = [e.offsetX-(brushWidth/2),e.offsetY-(brushWidth/2)]
     }
 })
 
@@ -74,7 +97,28 @@ canvas.addEventListener('mousemove',function mouseMoveEvent(e){
     if(enableDrawing){
         if(mouseDown){
             updatedPositions.push([e.offsetX-(brushWidth/2),e.offsetY-(brushWidth/2)])
-            ctx.fillRect(e.offsetX-(brushWidth/2),e.offsetY-(brushWidth/2),brushWidth,brushWidth)
+            
+            let x = e.offsetX-(brushWidth/2) - prevPosition[0]
+            let y = e.offsetY-(brushWidth/2) - prevPosition[1]
+            if(x > 0){
+                for(let i=0;i<x;i++){
+                    ctx.fillRect(prevPosition[0]+i,prevPosition[1]+(i*(y/x)),brushWidth,brushWidth)
+                }
+            } else if(x < 0) {
+                for(let i=0;i>x;i--){
+                    ctx.fillRect(prevPosition[0]+i,prevPosition[1]+(i*(y/x)),brushWidth,brushWidth)
+                }
+            } else if(y > 0) {
+                for(let i=0;i<y;i++){
+                    ctx.fillRect(prevPosition[0],prevPosition[1]+i,brushWidth,brushWidth)
+                }
+            } else if(y < 0) {
+                for(let i=0;i>y;i--){
+                    ctx.fillRect(prevPosition[0],prevPosition[1]+i,brushWidth,brushWidth)
+                }
+            }
+
+            prevPosition = [e.offsetX-(brushWidth/2),e.offsetY-(brushWidth/2)]
         }
     }
 })
@@ -83,7 +127,6 @@ canvas.addEventListener('mouseup',async function mouseUpEvent(e){
     if(enableDrawing){
         mouseDown = false
         updatedPositions = Array.from(new Set(updatedPositions.map(JSON.stringify)), JSON.parse)
-        console.log(updatedPositions)
         var {error} = await supabaseClient
             .from('boardData')
             .update({boardData: updatedPositions})
