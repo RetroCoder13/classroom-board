@@ -5,6 +5,7 @@ var mouseDown = false
 var updatedPositions = []
 var enableDrawing = true
 var prevPosition = []
+var brushMode = "brush"
 
 if(!localStorage['sb-dkffidtdquvdbslkvqux-auth-token']){
     location.href = "./login"
@@ -34,6 +35,7 @@ function changeMode(){
         document.getElementById('color').hidden = false
         document.getElementById('clearScreen').hidden = false
         document.getElementById('brushWidth').hidden = false
+        document.getElementById('brushMode').hidden = false
         enableDrawing = true
     }
 
@@ -41,6 +43,7 @@ function changeMode(){
         document.getElementById('color').hidden = true
         document.getElementById('clearScreen').hidden = true
         document.getElementById('brushWidth').hidden = true
+        document.getElementById('brushMode').hidden = true
         enableDrawing = false
         getScreen()
         supabaseClient
@@ -50,27 +53,44 @@ function changeMode(){
                     ctx.clearRect(0,0,canvas.width,canvas.height)
                 } else {
                     payload = JSON.parse(payload.new.boardData)
-                    prevPosition = [payload[2][0],payload[2][1]]
+                    prevPosition = [payload[3][0],payload[3][1]]
                     brushWidth = payload[1]
+                    brushMode = payload[2]
                     ctx.fillStyle = payload[0]
-                    for(let i=3;i<payload.length;i++){
+                    for(let i=4;i<payload.length;i++){
                         let x = payload[i][0] - prevPosition[0]
                         let y = payload[i][1] - prevPosition[1]
                         if(x > 0){
                             for(let i=0;i<x;i++){
-                                ctx.fillRect(prevPosition[0]+i,prevPosition[1]+(i*(y/x)),brushWidth,brushWidth)
+                                if(brushMode == "brush"){
+                                    ctx.fillRect(prevPosition[0]+i,prevPosition[1]+(i*(y/x)),brushWidth,brushWidth)
+                                } else if(brushMode == "erase"){
+                                    ctx.clearRect(prevPosition[0]+i,prevPosition[1]+(i*(y/x)),brushWidth,brushWidth)
+                                }
                             }
                         } else if(x < 0) {
                             for(let i=0;i>x;i--){
-                                ctx.fillRect(prevPosition[0]+i,prevPosition[1]+(i*(y/x)),brushWidth,brushWidth)
+                                if(brushMode == "brush"){
+                                    ctx.fillRect(prevPosition[0]+i,prevPosition[1]+(i*(y/x)),brushWidth,brushWidth)
+                                } else if(brushMode == "erase"){
+                                    ctx.clearRect(prevPosition[0]+i,prevPosition[1]+(i*(y/x)),brushWidth,brushWidth)
+                                }
                             }
                         } else if(y > 0) {
                             for(let i=0;i<y;i++){
-                                ctx.fillRect(prevPosition[0],prevPosition[1]+i,brushWidth,brushWidth)
+                                if(brushMode == "brush"){
+                                    ctx.fillRect(prevPosition[0],prevPosition[1]+i,brushWidth,brushWidth)
+                                } else if(brushMode == "erase"){
+                                    ctx.clearRect(prevPosition[0],prevPosition[1]+i,brushWidth,brushWidth)
+                                }
                             }
                         } else if(y < 0) {
                             for(let i=0;i>y;i--){
-                                ctx.fillRect(prevPosition[0],prevPosition[1]+i,brushWidth,brushWidth)
+                                if(brushMode == "brush"){
+                                    ctx.fillRect(prevPosition[0],prevPosition[1]+i,brushWidth,brushWidth)
+                                } else if(brushMode == "erase"){
+                                    ctx.clearRect(prevPosition[0],prevPosition[1]+i,brushWidth,brushWidth)
+                                }
                             }
                         }
 
@@ -87,8 +107,12 @@ canvas.addEventListener('mousedown',function mouseDownEvent(e){
         ctx.fillStyle = document.getElementById('color').value
         brushWidth = document.getElementById('brushWidth').value
         mouseDown = true
-        updatedPositions = [ctx.fillStyle,brushWidth,[e.offsetX-(brushWidth/2),e.offsetY-(brushWidth/2)]]
-        ctx.fillRect(e.offsetX-(brushWidth/2),e.offsetY-(brushWidth/2),brushWidth,brushWidth)
+        updatedPositions = [ctx.fillStyle,brushWidth,brushMode,[e.offsetX-(brushWidth/2),e.offsetY-(brushWidth/2)]]
+        if(brushMode == "brush"){
+            ctx.fillRect(e.offsetX-(brushWidth/2),e.offsetY-(brushWidth/2),brushWidth,brushWidth)
+        } else if(brushMode == "erase"){
+            ctx.clearRect(e.offsetX-(brushWidth/2),e.offsetY-(brushWidth/2),brushWidth,brushWidth)
+        }
         prevPosition = [e.offsetX-(brushWidth/2),e.offsetY-(brushWidth/2)]
     }
 })
@@ -102,19 +126,35 @@ canvas.addEventListener('mousemove',function mouseMoveEvent(e){
             let y = e.offsetY-(brushWidth/2) - prevPosition[1]
             if(x > 0){
                 for(let i=0;i<x;i++){
-                    ctx.fillRect(prevPosition[0]+i,prevPosition[1]+(i*(y/x)),brushWidth,brushWidth)
+                    if(brushMode == "brush"){
+                        ctx.fillRect(prevPosition[0]+i,prevPosition[1]+(i*(y/x)),brushWidth,brushWidth)
+                    } else if(brushMode == "erase"){
+                        ctx.clearRect(prevPosition[0]+i,prevPosition[1]+(i*(y/x)),brushWidth,brushWidth)
+                    }
                 }
             } else if(x < 0) {
                 for(let i=0;i>x;i--){
-                    ctx.fillRect(prevPosition[0]+i,prevPosition[1]+(i*(y/x)),brushWidth,brushWidth)
+                    if(brushMode == "brush"){
+                        ctx.fillRect(prevPosition[0]+i,prevPosition[1]+(i*(y/x)),brushWidth,brushWidth)
+                    } else if(brushMode == "erase"){
+                        ctx.clearRect(prevPosition[0]+i,prevPosition[1]+(i*(y/x)),brushWidth,brushWidth)
+                    }
                 }
             } else if(y > 0) {
                 for(let i=0;i<y;i++){
-                    ctx.fillRect(prevPosition[0],prevPosition[1]+i,brushWidth,brushWidth)
+                    if(brushMode == "brush"){
+                        ctx.fillRect(prevPosition[0],prevPosition[1]+i,brushWidth,brushWidth)
+                    } else if(brushMode == "erase"){
+                        ctx.clearRect(prevPosition[0],prevPosition[1]+i,brushWidth,brushWidth)
+                    }
                 }
             } else if(y < 0) {
                 for(let i=0;i>y;i--){
-                    ctx.fillRect(prevPosition[0],prevPosition[1]+i,brushWidth,brushWidth)
+                    if(brushMode == "brush"){
+                        ctx.fillRect(prevPosition[0],prevPosition[1]+i,brushWidth,brushWidth)
+                    } else if(brushMode == "erase"){
+                        ctx.clearRect(prevPosition[0],prevPosition[1]+i,brushWidth,brushWidth)
+                    }
                 }
             }
 

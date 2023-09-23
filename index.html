@@ -7,10 +7,14 @@
     <script src="setup.js"></script>
 </head>
 <body>
-    <canvas id="board" width="1000" height="500" style="border: 1px solid black; position: relative; left: -4px; top: -4px;"></canvas>
+    <canvas id="board" width="1000" height="500" style="border: 1px solid black; position: relative; left: -4px; top: -4px;" draggable="false"></canvas>
     <input type="color" name="color" id="color">
     <button id="clearScreen" onclick="clearScreen()">Clear</button>
     <input type="range" name="brushWidth" id="brushWidth" min="2" max="100" step="2" value="10">
+    <select name="brushMode" id="brushMode" onchange="brushMode=this.value">
+        <option value="brush">Brush</option>
+        <option value="erase">Erase</option>
+    </select>
     <script src="main.js"></script>
     <button onclick="supabaseClient.auth.signOut();location.href='./login'">Log Out</button>
 </body>
