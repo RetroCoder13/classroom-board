@@ -25,11 +25,14 @@ function changeMode(){
         supabaseClient
             .channel('any')
             .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'boardData', filter: 'user_id=eq.1' }, payload => {
-                payload = JSON.parse(payload.new.boardData)
-                console.log(payload)
-                ctx.fillStyle = payload[0]
-                for(let i=1;i<payload.length;i++){
-                    ctx.fillRect(payload[i][0],payload[i][1],10,10)
+                if(payload.new.boardData == "clear"){
+                    ctx.clearRect(0,0,canvas.width,canvas.height)
+                } else {
+                    payload = JSON.parse(payload.new.boardData)
+                    ctx.fillStyle = payload[0]
+                    for(let i=1;i<payload.length;i++){
+                        ctx.fillRect(payload[i][0],payload[i][1],10,10)
+                    }
                 }
             })
             .subscribe()
@@ -66,5 +69,17 @@ canvas.addEventListener('mouseup',async function mouseUpEvent(e){
         console.log(error)
     }
 })
+
+async function clearScreen(){
+    console.log("clear")
+    ctx.clearRect(0,0,canvas.width,canvas.height)
+
+    var {error} = await supabaseClient
+        .from('boardData')
+        .update({boardData: "clear"})
+        .eq('user_id', 1)
+    
+    console.log(error)
+}
 
 changeMode()
