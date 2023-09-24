@@ -51,6 +51,8 @@ function changeMode(){
             .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'boardData', filter: 'user_id=eq.1' }, payload => {
                 if(payload.new.boardData == "clear"){
                     ctx.clearRect(0,0,canvas.width,canvas.height)
+                } else if(payload.new.boardData == "save"){
+                    downloadImage()
                 } else {
                     payload = JSON.parse(payload.new.boardData)
                     prevPosition = [payload[3][0],payload[3][1]]
@@ -185,6 +187,27 @@ async function clearScreen(){
         .eq('user_id', 1)
     
     console.log(error)
+}
+
+async function save(){
+    if(JSON.parse(localStorage['sb-dkffidtdquvdbslkvqux-auth-token']).user.email == "atk@gbhs.co.uk"){
+        var {error} = await supabaseClient
+            .from('boardData')
+            .update({boardData: "save"})
+            .eq('user_id', 1)
+    }
+    downloadImage()
+}
+
+async function downloadImage(){
+    // let image = document.createElement('img')
+    // image.src = canvas.toDataURL('image/png')
+    // var { data, error } = await supabaseClient.storage.from('uploads').upload('image.png', canvas.toDataURL('image/png'), {contentType: 'image/png'})
+
+    let link = document.createElement('a')
+    link.download = `${new Date().getDate()}-${new Date().getMonth()}-${new Date().getFullYear()}.png`
+    link.href = canvas.toDataURL()
+    link.click()
 }
 
 changeMode()
