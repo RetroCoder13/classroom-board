@@ -8,15 +8,26 @@
 </head>
 <body>
     <canvas id="board" width="1000" height="500" style="border: 1px solid black; position: relative; left: -4px; top: -4px;" draggable="false"></canvas>
+
+    <br>
+
     <input type="color" name="color" id="color">
+    <br>
     <button id="clearScreen" onclick="clearScreen()">Clear</button>
+    <br>
+    <label for="brushWidth">Brush Width:</label>
     <input type="range" name="brushWidth" id="brushWidth" min="2" max="100" step="2" value="10">
+    <br>
     <select name="brushMode" id="brushMode" onchange="brushMode=this.value">
         <option value="brush">Brush</option>
         <option value="erase">Erase</option>
     </select>
+    <br>
     <button id="save" onclick="save()">Save</button>
-    <script src="main.js"></script>
+    <br>
+    <br>
     <button onclick="supabaseClient.auth.signOut();location.href='./login'">Log Out</button>
+
+    <script src="main.js"></script>
 </body>
 </html>
