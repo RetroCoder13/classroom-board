@@ -16,7 +16,7 @@ async function getScreen(){
     var { data, error } = await supabaseClient
         .from('boardData')
         .select()
-        .order('user_id', {ascending: true})
+        .order('data_id', {ascending: true})
 
     for(let i=0;i<data.length;i++){
         if(data[i].boardData == "clear"){
@@ -213,7 +213,7 @@ canvas.addEventListener('mouseup',async function mouseUpEvent(e){
         updatedPositions = Array.from(new Set(updatedPositions.map(JSON.stringify)), JSON.parse)
         var {error} = await supabaseClient
             .from('boardData')
-            .insert({user_id: updates, boardData: updatedPositions})
+            .insert({data_id: updates, boardData: updatedPositions})
         updates += 1
     }
 })
@@ -226,12 +226,12 @@ async function clearScreen(){
             var {error} = await supabaseClient
                 .from('boardData')
                 .update({boardData: "clear"})
-                .eq('user_id', 1)
+                .eq('data_id', 1)
         } else {
             var {error} = await supabaseClient
                 .from('boardData')
                 .delete()
-                .eq('user_id', i)
+                .eq('data_id', i)
         }
     }
     updates = 2
@@ -242,7 +242,7 @@ async function save(){
         var {error} = await supabaseClient
             .from('boardData')
             .update({boardData: "save"})
-            .eq('user_id', 1)
+            .eq('data_id', 1)
     }
     downloadImage()
 }
