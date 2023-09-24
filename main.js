@@ -6,6 +6,7 @@ var updatedPositions = []
 var enableDrawing = true
 var prevPosition = []
 var brushMode = "brush"
+var updates = 2
 
 if(!localStorage['sb-dkffidtdquvdbslkvqux-auth-token']){
     location.href = "./login"
@@ -15,17 +16,56 @@ async function getScreen(){
     var { data, error } = await supabaseClient
         .from('boardData')
         .select()
-    
-    console.log(data[0].boardData)
-    
-    if(data[0].boardData == "clear"){
-        ctx.clearRect(0,0,canvas.width,canvas.height)
-    } else {
-        data = JSON.parse(data[0].boardData)
-        brushWidth = data[1]
-        ctx.fillStyle = data[0]
-        for(let i=2;i<data.length;i++){
-            ctx.fillRect(data[i][0]-(brushWidth/2),data[i][1]-(brushWidth/2),brushWidth,brushWidth)
+        .order('user_id', {ascending: true})
+
+    for(let i=0;i<data.length;i++){
+        if(data[i].boardData == "clear"){
+            ctx.clearRect(0,0,canvas.width,canvas.height)
+        } else {
+            newData = JSON.parse(data[i].boardData)
+            brushWidth = parseInt(newData[1])
+            brushMode = newData[2]
+            ctx.fillStyle = newData[0]
+            prevPosition = newData[3]
+            for(let i=4;i<newData.length;i++){
+                let x = newData[i][0] - prevPosition[0]
+                let y = newData[i][1] - prevPosition[1]
+                if(x > 0){
+                    for(let i=0;i<x;i++){
+                        if(brushMode == "brush"){
+                            ctx.fillRect(prevPosition[0]+i,prevPosition[1]+(i*(y/x)),brushWidth,brushWidth)
+                        } else if(brushMode == "erase"){
+                            ctx.clearRect(prevPosition[0]+i,prevPosition[1]+(i*(y/x)),brushWidth,brushWidth)
+                        }
+                    }
+                } else if(x < 0) {
+                    for(let i=0;i>x;i--){
+                        if(brushMode == "brush"){
+                            ctx.fillRect(prevPosition[0]+i,prevPosition[1]+(i*(y/x)),brushWidth,brushWidth)
+                        } else if(brushMode == "erase"){
+                            ctx.clearRect(prevPosition[0]+i,prevPosition[1]+(i*(y/x)),brushWidth,brushWidth)
+                        }
+                    }
+                } else if(y > 0) {
+                    for(let i=0;i<y;i++){
+                        if(brushMode == "brush"){
+                            ctx.fillRect(prevPosition[0],prevPosition[1]+i,brushWidth,brushWidth)
+                        } else if(brushMode == "erase"){
+                            ctx.clearRect(prevPosition[0],prevPosition[1]+i,brushWidth,brushWidth)
+                        }
+                    }
+                } else if(y < 0) {
+                    for(let i=0;i>y;i--){
+                        if(brushMode == "brush"){
+                            ctx.fillRect(prevPosition[0],prevPosition[1]+i,brushWidth,brushWidth)
+                        } else if(brushMode == "erase"){
+                            ctx.clearRect(prevPosition[0],prevPosition[1]+i,brushWidth,brushWidth)
+                        }
+                    }
+                }
+
+                prevPosition = [newData[i][0],newData[i][1]]
+            }
         }
     }
 }
@@ -48,7 +88,7 @@ function changeMode(){
         getScreen()
         supabaseClient
             .channel('any')
-            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'boardData', filter: 'user_id=eq.1' }, payload => {
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'boardData' }, payload => {
                 if(payload.new.boardData == "clear"){
                     ctx.clearRect(0,0,canvas.width,canvas.height)
                 } else if(payload.new.boardData == "save"){
@@ -171,22 +211,28 @@ canvas.addEventListener('mouseup',async function mouseUpEvent(e){
         updatedPositions = Array.from(new Set(updatedPositions.map(JSON.stringify)), JSON.parse)
         var {error} = await supabaseClient
             .from('boardData')
-            .update({boardData: updatedPositions})
-            .eq('user_id', 1)
-        console.log(error)
+            .insert({user_id: updates, boardData: updatedPositions})
+        updates += 1
     }
 })
 
 async function clearScreen(){
-    console.log("clear")
     ctx.clearRect(0,0,canvas.width,canvas.height)
 
-    var {error} = await supabaseClient
-        .from('boardData')
-        .update({boardData: "clear"})
-        .eq('user_id', 1)
-    
-    console.log(error)
+    for(let i=1;i<updates;i++){
+        if(i==1){
+            var {error} = await supabaseClient
+                .from('boardData')
+                .update({boardData: "clear"})
+                .eq('user_id', 1)
+        } else {
+            var {error} = await supabaseClient
+                .from('boardData')
+                .delete()
+                .eq('user_id', i)
+        }
+    }
+    updates = 2
 }
 
 async function save(){
