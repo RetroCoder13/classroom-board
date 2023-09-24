@@ -75,6 +75,7 @@ function changeMode(){
         document.getElementById('color').hidden = false
         document.getElementById('clearScreen').hidden = false
         document.getElementById('brushWidth').hidden = false
+        document.getElementById('brushWidthLabel').hidden = false
         document.getElementById('brushMode').hidden = false
         enableDrawing = true
     }
@@ -83,6 +84,7 @@ function changeMode(){
         document.getElementById('color').hidden = true
         document.getElementById('clearScreen').hidden = true
         document.getElementById('brushWidth').hidden = true
+        document.getElementById('brushWidthLabel').hidden = true
         document.getElementById('brushMode').hidden = true
         enableDrawing = false
         getScreen()
